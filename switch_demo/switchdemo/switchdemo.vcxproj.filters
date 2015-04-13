@@ -15,12 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="com_io_ctl.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="implementsetting.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="stdafx.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -29,16 +23,16 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="com_io_ctl.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="implementsetting.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="stdafx.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="switch_info.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="com_io_ctl.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="implementsetting.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

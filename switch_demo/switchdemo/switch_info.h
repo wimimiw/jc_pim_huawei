@@ -136,7 +136,6 @@
 "\n"\
 ""
 #define IMPLEMENT_STRING  "[ip]\n"\
-"namelist			=Signalswich,Paspecumpwmt,Testmdlte700,Testmddd800,Testmdgsm900,Testmddcs1800,Testmdpcs1900,Testmdwcdma2100,Testmdlte2600\n"\
 "Signalswich         =127.0.0.1:5000\n"\
 "Paspecumpwmt        =127.0.0.1:5001\n"\
 "Testmdlte700        =127.0.0.1:5002 \n"\
@@ -211,8 +210,6 @@
 "ANTB=2\n"\
 "\n"\
 "[actiontx1]\n"\
-"namelist 	=lte700Atx1,Lte700Btx1,DD800Atx1,DD800Btx1,GSM900Atx1,GSM900Btx1,Dcs1800Atx1,Dcs1800Btx1,Pcs1900Atx1,Pcs1900Btx1,Wcdma2100Atx1,Wcdma2100Btx1,Lte2600Atx1,Lte2600Btx1\n"\
-"\n"\
 "lte700Atx1 	= Signal1swich(Signalswich,PA1in1) ,PA1swich1(Paspecumpwmt,MDlte700tx1),  Txoutswich(Testmdlte700 ,ANTA) \n"\
 "\n"\
 "Lte700Btx1 	= Signal1swich(Signalswich,PA1in1) ,PA1swich1(Paspecumpwmt,MDlte700tx1),  Txoutswich(Testmdlte700 ,ANTB) \n"\
@@ -242,8 +239,6 @@
 "Lte2600Btx1 	= Signal1swich(Signalswich,PA3in1) , Txoutswich(Testmdlte2600  ,ANTB) \n"\
 "\n"\
 "[actiontx2]\n"\
-"\n"\
-"namelist 	=lte700Atx2,Lte700Btx2,DD800Atx2,DD800Btx2,GSM900Atx2,GSM900Btx2,Dcs1800Atx2,Dcs1800Btx2,Pcs1900Atx2,Pcs1900Btx2,Wcdma2100Atx2,Wcdma2100Btx2,Lte2600Atx2,Lte2600Btx2\n"\
 "\n"\
 "lte700Atx2 	= Signal2swich(Signalswich,PA1in2) ,PA1swich2(Paspecumpwmt,MDlte700tx2), Txoutswich(Testmdlte700 ,ANTA) \n"\
 "\n"\
@@ -276,8 +271,6 @@
 "	\n"\
 "\n"\
 "[actionpim]\n"\
-"namelist 	=lte700Apim,Lte700Bpim,DD800Apim,DD800Bpim,GSM900Apim,GSM900Bpim,Dcs1800Apim,Dcs1800Bpim,Pcs1900Apim,Pcs1900Bpim,Wcdma2100Apim,Wcdma2100Bpim,Lte2600Apim,Lte2600Bpim\n"\
-"\n"\
 "lte700Apim 	= Spectrumswich(Paspecumpwmt,MDlte700pim),Pimswich( Testmdlte700, Pimdetrxa)\n"\
 "\n"\
 "Lte700Bpim 	= Spectrumswich(Paspecumpwmt,MDlte700pim),Pimswich( Testmdlte700, Pimdetrxb)\n"\
@@ -308,8 +301,6 @@
 "\n"\
 "\n"\
 "[actiondet]\n"\
-"namelist 		=lte700tx1det,lte700tx2det,DD800tx1det,DD800tx2det,GSM900tx1det,GSM900tx2det,Dcs1800tx1det,Dcs1800tx2det,Pcs1900tx1det,Pcs1900tx2det,Wcdma2100tx1det,Wcdma2100tx2det,Lte2600tx1det,Lte2600tx2det\n"\
-"\n"\
 "lte700tx1det  	= Powermeterswich(Paspecumpwmt,MDlte700pwmt),    Couplerswich( Testmdlte700,Powerdettx1)\n"\
 "\n"\
 "lte700tx2det  	= Powermeterswich(Paspecumpwmt,MDlte700pwmt),    Couplerswich( Testmdlte700,Powerdettx2)\n"\

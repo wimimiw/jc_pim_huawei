@@ -14,7 +14,7 @@
 //V20150306001
 
 #include "stdafx.h"
-#include "com_io_ctl.h"
+#include "com_io_ctl.hpp"
 
 using namespace std;
 using namespace ns_com_io_ctl;
@@ -62,7 +62,7 @@ CONNECT:
 	//开关配置（可选项）将某个IP模块禁能
 	//读取IP列表
 	//cout << "正在获取开关箱在线模块..." << endl;
-	map<string,com_io_ctl::stHostControl> hosts;
+	map<string,implementsetting::stHostControl> hosts;
 	cic->GetHostsCtrl(hosts);
 
 	//显示模块在线状态  stHostControl.isOnLine 
@@ -81,7 +81,7 @@ CONNECT:
 
 	if (key != "#")
 	{
-		 vector<string> chanName = implementsetting::split(key, ",");
+		 vector<string> chanName = com_io_ctl::split(key, ",");
 
 		 for (vector<string>::iterator itr = chanName.begin();
 			 itr != chanName.end();
@@ -94,25 +94,26 @@ CONNECT:
 
 	vector<string> moduleList = cic->GetModuleList();
 
-	//hosts["700"].enable = false;	hosts[moduleList[0]].enable = false;
+	//hosts["700"].enable = false;	//hosts[moduleList[0]].enable = false;
 	//hosts["800"].enable = false;	//hosts[moduleList[1]].enable = false;
 	//hosts["900"].enable = false;	//hosts[moduleList[2]].enable = false;
 	//hosts["1800"].enable = false;	//hosts[moduleList[3]].enable = false;
 	//hosts["1900"].enable = false;	//hosts[moduleList[4]].enable = false;
 	//hosts["2100"].enable = false;	//hosts[moduleList[5]].enable = false;
-	//hosts["2600"].enable = false;	//hosts[moduleList[6]].enable = false;
-	//hosts["Signalswich"].enable = false;
-	//hosts["Paspecumpwmt"].enable = false;
+	//hosts["2600"].enable = false;	//hosts[moduleList[6]].enable = false;	
 
-	for(map<string,com_io_ctl::stHostControl>::iterator itr = hosts.begin();
+	//设置使能	
+	cic->SetHostsCtrl(hosts,true,true);
+	
+	//更新hosts
+	cic->GetHostsCtrl(hosts);
+
+	for (map<string, implementsetting::stHostControl>::iterator itr = hosts.begin();
 		itr != hosts.end();
 		itr++)
 	{
 		cout<<itr->second.name<<"@"<<itr->second.ip<<"<"<<itr->second.enable<<">"<<endl;
 	}
-
-	//设置使能
-	cic->SetHostsCtrl(hosts);
 
 	//cic->Connect();
 	//cic->DisConnect();
@@ -127,7 +128,7 @@ CONNECT:
 	cic->GetHostsCtrl(hosts);
 
 	//打印网络连接状态
-	for (map<string, com_io_ctl::stHostControl>::iterator itr = hosts.begin();
+	for (map<string, implementsetting::stHostControl>::iterator itr = hosts.begin();
 		itr != hosts.end();
 		itr++)
 	{
