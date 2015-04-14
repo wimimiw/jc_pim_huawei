@@ -10,6 +10,8 @@
 * @brief	:
 2015.3.6
 	增加网络连接异步操作函数：IOConnetBegin,IOConnectEnd
+2015.4.14
+	增加UDP连接选项
 *------------------------------------------------------------------------------*/
 #include "StdAfx.h"
 #include "com_io_ctl.h"
@@ -146,9 +148,8 @@ namespace ns_com_io_ctl{
 	//网络发送虚函数
 	bool com_io_ctl::IOWrite(const string&host, const char*buf, int len)
 	{
-		if(__maskIO)return true;
+		if (__maskIO)return true;
 
-		SOCKET hSocket = __socketClient[host];
 		bool result = false;
 		//timeval tm;
 		//fd_set fdwrite;
@@ -163,20 +164,36 @@ namespace ns_com_io_ctl{
 
 		//if (FD_ISSET(hSocket, &fdwrite))
 		//{
-		result = send(hSocket, buf, len, 0) != SOCKET_ERROR;
-		//}		
-		log(host + " IOWrite:send  " + (result ? "Success!" : ("Failed! : " + logGetLastError())));
+		//}	
 		//FD_CLR(hSocket, &fdwrite);
+
+		if (__conType == E_TCP)
+		{
+			SOCKET hSocket = __socketClient[host];
+			result = send(hSocket, buf, len, 0) != SOCKET_ERROR;
+		}
+		else if (__conType == E_UDP)
+		{
+			SOCKET hSocket = __socketClient[host];
+			sockaddr_in RecvAddr = __addrRecver[host];
+			result = sendto(hSocket, buf, len, 0, (SOCKADDR *)&RecvAddr, sizeof(RecvAddr)) != SOCKET_ERROR;
+		}
+		else if (__conType == E_COM)
+		{
+			//doing
+		}
+
+		log(host + " IOWrite:send  " + (result ? "Success!" : ("Failed! : " + logGetLastError())));
+
 		__socketState[host] = result;
 
 		return result;
 	}
 	//网络接收虚函数
 	bool com_io_ctl::IORead(const string&host, char*buf, int*len)
-	{	
-		if(__maskIO)return true;
+	{
+		if (__maskIO)return true;
 
-		SOCKET hSocket = __socketClient[host];
 		bool result = false;
 		//timeval tm;
 		//fd_set fdread;
@@ -191,10 +208,27 @@ namespace ns_com_io_ctl{
 
 		//if (FD_ISSET(hSocket, &fdread))
 		//{
-		result = recv(hSocket, buf, *len, 0) != SOCKET_ERROR;
 		//}	
-		log(host + " IORead:recv  " + (result ? "Success!" : ("Failed! : " + logGetLastError())));
 		//FD_CLR(hSocket, &fdread);
+
+		if (__conType == E_TCP)
+		{
+			SOCKET hSocket = __socketClient[host];
+			result = recv(hSocket, buf, *len, 0) != SOCKET_ERROR;
+		}
+		else if (__conType == E_UDP)
+		{
+			SOCKET hSocket = __socketClient[host];
+			sockaddr_in RecvAddr = __addrRecver[host];
+			int recvAddrSize = sizeof(RecvAddr);
+			result = recvfrom(hSocket, buf, *len, 0, (SOCKADDR *)&RecvAddr, &recvAddrSize) != SOCKET_ERROR;
+		}
+		else if (__conType == E_COM)
+		{
+			//doing
+		}
+
+		log(host + " IORead:recv  " + (result ? "Success!" : ("Failed! : " + logGetLastError())));
 
 		__socketState[host] = result;
 
@@ -274,33 +308,111 @@ namespace ns_com_io_ctl{
 		return result;
 	}
 	//套接字测试
-	void com_io_ctl::socketTest()
+	void com_io_ctl::SocketTest()
 	{
-		WORD wVersionRequested;
+		int iResult;
 		WSADATA wsaData;
 
-		wVersionRequested = MAKEWORD( 2, 2 );
-		int err = WSAStartup( wVersionRequested, &wsaData ); 	
+		SOCKET SendSocket = INVALID_SOCKET;
+		sockaddr_in SenderAddr;
+		int SenderAddrSize = sizeof(SenderAddr);
 
-		SOCKET sc=WSASocket(AF_INET,SOCK_STREAM,0,NULL,0,NULL);
+		unsigned short Port = 27015;
 
-		SOCKADDR_IN addr;
-		addr.sin_family=AF_INET;
-		addr.sin_addr.s_addr = inet_addr("127.0.0.1");
-		addr.sin_port = htons(1002);
+		char SendBuf[] = { 'W', 0, 0, 12, 0, 0, 0, 0, 0, 0, 0, 12 };
+		char RecvBuf[12] = { 0 };
+		int BufLen = 12;
 
-		connect(sc, (struct sockaddr *)&addr, sizeof(addr));
+		//----------------------
+		// Initialize Winsock
+		iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
+		if (iResult != NO_ERROR) {
+			wprintf(L"WSAStartup failed with error: %d\n", iResult);
+			//return 1;
+		}
 
-		char buff[1024];
-		ZeroMemory(buff,1024);
-		memcpy(buff,"asdfghjkpoioiuytrwqzxcvnm,",20);
+		//---------------------------------------------
+		// Create a socket for sending data
+		SendSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+		if (SendSocket == INVALID_SOCKET) {
+			wprintf(L"socket failed with error: %ld\n", WSAGetLastError());
+			WSACleanup();
+			//return 1;
+		}
 
-		send(sc,buff,20,0);
+		//-----------------------------------------------
+		//Bind the socket to any address and the specified port.
+		//sockaddr_in RecvAddr;
+		//RecvAddr.sin_family = AF_INET;
+		//RecvAddr.sin_port = htons(Port);
+		//RecvAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
-		recv(sc,buff,1024,0);
-		cout<<buff<<endl;
+		//iResult = bind(SendSocket, (SOCKADDR *)& RecvAddr, sizeof(RecvAddr));
+		//if (iResult != 0) {
+		//	wprintf(L"bind failed with error %d\n", WSAGetLastError());
+		//	return 1;
+		//}
 
-		closesocket(sc);
+		//---------------------------------------------
+		// Set up the RecvAddr structure with the IP address of
+		// the receiver (in this example case "192.168.1.1")
+		// and the specified port number.
+		SenderAddr.sin_family = AF_INET;
+		SenderAddr.sin_port = htons(4001);
+		SenderAddr.sin_addr.s_addr = inet_addr("192.168.0.178");
+
+		bool result;
+		int iTimeOut = 3000;
+
+		result = SOCKET_ERROR != setsockopt(SendSocket, SOL_SOCKET, SO_RCVTIMEO, (char*)&iTimeOut, sizeof(iTimeOut));
+		result = SOCKET_ERROR != setsockopt(SendSocket, SOL_SOCKET, SO_SNDTIMEO, (char*)&iTimeOut, sizeof(iTimeOut));
+
+		for (int i = 0;; i++)
+		{
+			//---------------------------------------------
+			// Send a datagram to the receiver
+			//wprintf(L"Sending a datagram to the receiver...\n");
+			iResult = sendto(SendSocket,
+				SendBuf, 12, 0, (SOCKADDR *)&SenderAddr, sizeof(SenderAddr));
+
+			if (iResult == SOCKET_ERROR) {
+				wprintf(L"sendto failed with error: %d\n", WSAGetLastError());
+				closesocket(SendSocket);
+				WSACleanup();
+				//return 1;
+			}
+
+			//-----------------------------------------------
+			// Call the recvfrom function to receive datagrams
+			// on the bound socket.
+			//wprintf(L"Receiving datagrams...\n");
+			iResult = recvfrom(SendSocket,
+				RecvBuf, 12, 0, (SOCKADDR *)&SenderAddr, &SenderAddrSize);
+			if (iResult == SOCKET_ERROR) {
+				wprintf(L"recvfrom failed with error %d\n", WSAGetLastError());
+				//break;
+			}
+
+			wprintf(L"Implement Count = %d\n", i);
+		}
+
+		//---------------------------------------------
+		// When the application is finished sending, close the socket.
+		wprintf(L"Finished sending. Closing socket.\n");
+		iResult = closesocket(SendSocket);
+		if (iResult == SOCKET_ERROR) {
+			wprintf(L"closesocket failed with error: %d\n", WSAGetLastError());
+			WSACleanup();
+			//return 1;
+		}
+		//---------------------------------------------
+		// Clean up and quit.
+		wprintf(L"Exiting.\n");
+		WSACleanup();
+
+		getchar();
+
+		//return 0;
 	}
 	//删除文件
 	void com_io_ctl::WindowsDeleteFile(const char* file)
@@ -329,43 +441,79 @@ namespace ns_com_io_ctl{
 
 		bool result = true;
 		int iTimeOut = TCP_SEND_TIMEOUT * 1000;
-		unsigned long ul = 1;
-
 		vector<string>hostInfo = split(host, ":");
 		string ip = hostInfo[0];
 		int port = atoi(hostInfo[1].c_str());
 
-		SOCKET hSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-
-		if (hSocket == INVALID_SOCKET)
+		if (__conType == E_TCP)
 		{
-			log(host+" IOConnectBegin:socket Failed! : "+logGetLastError());
-			return false;
+			unsigned long ul = 1;
+
+			SOCKET hSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+
+			if (hSocket == INVALID_SOCKET)
+			{
+				log(host + " IOConnectBegin:socket Failed! : " + logGetLastError());
+				return false;
+			}
+
+			SOCKADDR_IN addr;
+			addr.sin_family = AF_INET;
+			addr.sin_addr.s_addr = inet_addr(ip.c_str());
+			addr.sin_port = htons(port);
+
+			result = SOCKET_ERROR != setsockopt(hSocket, SOL_SOCKET, SO_RCVTIMEO, (char*)&iTimeOut, sizeof(iTimeOut));
+
+			log(host + " IOConnectBegin:setsockopt SO_RCVTIMEO  " + (result ? "Success!" : ("Failed! : " + logGetLastError())));
+
+			result = SOCKET_ERROR != setsockopt(hSocket, SOL_SOCKET, SO_SNDTIMEO, (char*)&iTimeOut, sizeof(iTimeOut));
+
+			log(host + " IOConnectBegin:setsockopt SO_SNDTIMEO  " + (result ? "Success!" : ("Failed! : " + logGetLastError())));
+
+			ul = 1;
+			result = SOCKET_ERROR != ioctlsocket(hSocket, FIONBIO, &ul); //设置为非阻塞模式
+
+			log(host + " IOConnectBegin:ioctlsocket  " + (result ? "Success!" : ("Failed! : " + logGetLastError())));
+
+			result = SOCKET_ERROR != connect(hSocket, (struct sockaddr *)&addr, sizeof(addr));
+
+			if (!result)log(host + " IOConnectBegin:connect Failed! ");
+
+			__socketClient[host] = hSocket;
 		}
+		else if (__conType == E_UDP)
+		{
+			SOCKET hSocket = INVALID_SOCKET;
+			//---------------------------------------------
+			// Create a socket for sending data
+			hSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+			if (hSocket == INVALID_SOCKET)
+			{
+				log(host + " IOConnectBegin:socket Failed! : " + logGetLastError());
+				return false;
+			}
 
-		SOCKADDR_IN addr;
-		addr.sin_family = AF_INET;
-		addr.sin_addr.s_addr = inet_addr(ip.c_str());
-		addr.sin_port = htons(port);
+			__socketClient[host] = hSocket;
 
-		result = SOCKET_ERROR != setsockopt(hSocket, SOL_SOCKET, SO_RCVTIMEO, (char*)&iTimeOut, sizeof(iTimeOut));
-		
-		log(host + " IOConnectBegin:setsockopt SO_RCVTIMEO  " + (result ? "Success!" : ("Failed! : " + logGetLastError())));
-		
-		result = SOCKET_ERROR != setsockopt(hSocket, SOL_SOCKET, SO_SNDTIMEO, (char*)&iTimeOut, sizeof(iTimeOut));
+			//设置发送与接收超时
+			result = SOCKET_ERROR != setsockopt(hSocket, SOL_SOCKET, SO_RCVTIMEO, (char*)&iTimeOut, sizeof(iTimeOut));
+			log(host + " IOConnectBegin:setsockopt SO_RCVTIMEO  " + (result ? "Success!" : ("Failed! : " + logGetLastError())));
 
-		log(host + " IOConnectBegin:setsockopt SO_SNDTIMEO  " + (result ? "Success!" : ("Failed! : " + logGetLastError())));
+			result = SOCKET_ERROR != setsockopt(hSocket, SOL_SOCKET, SO_SNDTIMEO, (char*)&iTimeOut, sizeof(iTimeOut));
+			log(host + " IOConnectBegin:setsockopt SO_SNDTIMEO  " + (result ? "Success!" : ("Failed! : " + logGetLastError())));
 
-		ul = 1;
-		result = SOCKET_ERROR != ioctlsocket(hSocket, FIONBIO, &ul); //设置为非阻塞模式
+			//接收端主机
+			sockaddr_in RecvAddr;
+			RecvAddr.sin_family = AF_INET;
+			RecvAddr.sin_port = htons(port);
+			RecvAddr.sin_addr.s_addr = inet_addr(ip.c_str());
 
-		log(host + " IOConnectBegin:ioctlsocket  " + (result ? "Success!" : ("Failed! : " + logGetLastError())));
+			__addrRecver[host] = RecvAddr;			
+		}
+		else if (__conType == E_COM)
+		{
 
-		result = SOCKET_ERROR != connect(hSocket, (struct sockaddr *)&addr, sizeof(addr));
-
-		//if (!result)log(host + " IOConnectBegin:connect Failed! ");
-
-		__socketClient[host] = hSocket;	
+		}
 
 		return true;
 	}
@@ -374,43 +522,56 @@ namespace ns_com_io_ctl{
 	{
 		SOCKET hSocket = __socketClient[host];
 
-		bool result = true;
-		timeval tm;
-		fd_set fdwrite;
-		//tm.tv_sec = TCP_CONNECT_TIMEOUT;		//此处忽略timeout
-		//tm.tv_usec = TCP_CONNECT_TIMEOUT * 1000 % 1000 * 1000;
-		tm.tv_sec = timeout/1000;
-		tm.tv_usec = timeout%1000*1000;
+		if (__conType == E_TCP)
+		{
+			bool result = true;
+			timeval tm;
+			fd_set fdwrite;
+			tm.tv_sec = TCP_CONNECT_TIMEOUT;		//此处忽略timeout
+			tm.tv_usec = TCP_CONNECT_TIMEOUT * 1000 % 1000 * 1000;
+			//tm.tv_sec = timeout/1000;
+			//tm.tv_usec = timeout%1000*1000;
 
-		FD_ZERO(&fdwrite);
-		FD_SET(hSocket, &fdwrite);
+			FD_ZERO(&fdwrite);
+			FD_SET(hSocket, &fdwrite);
 
-		result = select(0, NULL, &fdwrite, NULL, &tm) > 0;
+			result = select(0, NULL, &fdwrite, NULL, &tm) > 0;
 
-		log(host + " IOConnectEnd:select  " + (result ? "Success!" : ("Failed! : " + logGetLastError())));
+			log(host + " IOConnectEnd:select  " + (result ? "Success!" : ("Failed! : " + logGetLastError())));
 
-		result = FD_ISSET(hSocket, &fdwrite) != 0;
+			result = FD_ISSET(hSocket, &fdwrite) != 0;
 
-		log(host + " IOConnectEnd:FD_ISSET  " + (result ? "Success!" : ("Failed! : " + logGetLastError())));
+			log(host + " IOConnectEnd:FD_ISSET  " + (result ? "Success!" : ("Failed! : " + logGetLastError())));
 
-		//if (result)
-		//{//该函数不要用，在正常连接的情况下会返回失败
-		//  char error[256];
-		//  int len;
-		//	len = sizeof(error);
-		//	result = getsockopt(hSocket, SOL_SOCKET, SO_ERROR, error, &len) == 0;			
-		//}
+			//if (result)
+			//{//该函数不要用，在正常连接的情况下会返回失败
+			//  char error[256];
+			//  int len;
+			//	len = sizeof(error);
+			//	result = getsockopt(hSocket, SOL_SOCKET, SO_ERROR, error, &len) == 0;			
+			//}
 
-		FD_CLR(hSocket, &fdwrite);
+			FD_CLR(hSocket, &fdwrite);
 
-		unsigned long ul = 0;
-		bool resICS = ioctlsocket(hSocket, FIONBIO, &ul) != SOCKET_ERROR; //设置为阻塞模式
+			unsigned long ul = 0;
+			bool resICS = ioctlsocket(hSocket, FIONBIO, &ul) != SOCKET_ERROR; //设置为阻塞模式
 
-		__socketState[host] = result;
+			__socketState[host] = result;
 
-		log(host + " IOConnectEnd:ioctlsocket and Connect  " + (result ? "Success!" : ("Failed! : " + logGetLastError())));
+			log(host + " IOConnectEnd:ioctlsocket and Connect  " + (result ? "Success!" : ("Failed! : " + logGetLastError())));
 
-		return result;
+			return result;
+		}
+		else if (__conType == E_UDP)
+		{
+
+		}
+		else if (__conType == E_COM)
+		{
+
+		}
+
+		return true;
 	}
 	//检查网络连接是否正常
 	bool com_io_ctl::IOSocketIsActive(const string&host)

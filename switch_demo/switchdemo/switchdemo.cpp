@@ -100,7 +100,7 @@ CONNECT:
 	//hosts["1800"].enable = false;	//hosts[moduleList[3]].enable = false;
 	//hosts["1900"].enable = false;	//hosts[moduleList[4]].enable = false;
 	//hosts["2100"].enable = false;	//hosts[moduleList[5]].enable = false;
-	//hosts["2600"].enable = false;	//hosts[moduleList[6]].enable = false;	
+	hosts["2600"].enable = false;	//hosts[moduleList[6]].enable = false;	
 
 	//ÉèÖÃÊ¹ÄÜ	
 	cic->SetHostsCtrl(hosts,true,true);
@@ -277,7 +277,7 @@ CONNECT:
 
 				int singleDelay=0,singleDelayBak=0;
 
-				for (size_t k = 0; k < 14; k++)
+				for (size_t k = 0; k < 12; k++)
 				{
 					singleDelay = GetTickCount();
 

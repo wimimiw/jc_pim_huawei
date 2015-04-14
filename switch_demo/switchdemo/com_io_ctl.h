@@ -22,6 +22,7 @@
 namespace ns_com_io_ctl{
 	using  namespace std;
 
+	#define  CONNECT_TYEP			E_UDP
 	#define	 DLL_HOST_NAME			"JcPimMultiBandV2.dll"		//宿主动态链接库名
 	#define  TCP_CONNECT_TIMEOUT	(3)
 	#define  TCP_SEND_TIMEOUT		(3)
@@ -32,27 +33,24 @@ namespace ns_com_io_ctl{
 	#define IP_HEADER_SIZE 20
 	#define ICMP_HEADER_SIZE 12
 
-	typedef struct _ICMP_HEADER
+	typedef enum
 	{
-		BYTE bType;        //类型
-		BYTE bCode;        //代码
-		USHORT nCheckSum;  //校验各
-		USHORT nId;        //进程ID
-		USHORT nSequence;  //序号
-		UINT nTimeStamp;   //时间
-	}ICMP_HEADER, *PICMP_HEADER;
+		E_TCP = 2, E_UDP = 3, E_COM = 4,
+	}EConType;
 
 	class com_io_ctl :
 		public implementsetting
 	{	
 	public:
 		com_io_ctl(void);		
-		void socketTest();
+		static void SocketTest();
 		virtual bool Reset(void);		
 		map<string, bool> __socketState;
 	private:	
 		bool __maskIO;
-		map<string,SOCKET> __socketClient;		
+		EConType __conType = CONNECT_TYEP;
+		map<string,SOCKET> __socketClient;	
+		map<string,sockaddr_in> __addrRecver;
 		virtual void Delay(int mil);
 		virtual bool IOConnect(const string&host);
 		virtual bool IODisConnect(const string&host);

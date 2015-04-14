@@ -560,15 +560,15 @@ namespace ns_com_io_ctl
 				bool wrResult = false;
 				int len = 12;
 
-				for (int i = 0; i < 1; i++)
+				for (int i = 0; i < 2; i++)
 				{
 					funcResult = wrResult = IOWrite(ip, (char*)txBuf, sizeof(txBuf));
 
-					if (wrResult == false)break;
+					if (wrResult == false)continue;
 
 					funcResult = wrResult = IORead(ip, (char*)rxBuf, &len);
 
-					if (wrResult == false)break;
+					if (wrResult == false)continue;
 
 					for (int j = 0; j < sizeof(txBuf); j++)
 					{
@@ -585,7 +585,8 @@ namespace ns_com_io_ctl
 				if (!funcResult)break;
 			}
 
-			if (replyCnt > 1 || funcResult)break;
+			break;
+			//if (replyCnt > 1 || funcResult)break;
 
 			replyCnt++;
 
