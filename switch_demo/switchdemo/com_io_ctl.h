@@ -74,5 +74,6 @@ namespace ns_com_io_ctl{
 		virtual void Message(const string&info);
 		void log(const string& info);
 		string logGetLastError();
+		wstring StringToWString(const string &str);
 	};
 }

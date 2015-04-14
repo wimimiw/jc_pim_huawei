@@ -377,10 +377,10 @@ namespace ns_com_io_ctl{
 		bool result = true;
 		timeval tm;
 		fd_set fdwrite;
-		tm.tv_sec = TCP_CONNECT_TIMEOUT;		//此处忽略timeout
-		tm.tv_usec = TCP_CONNECT_TIMEOUT * 1000 % 1000 * 1000;
-		//tm.tv_sec = timeout/1000;
-		//tm.tv_usec = timeout%1000*1000;
+		//tm.tv_sec = TCP_CONNECT_TIMEOUT;		//此处忽略timeout
+		//tm.tv_usec = TCP_CONNECT_TIMEOUT * 1000 % 1000 * 1000;
+		tm.tv_sec = timeout/1000;
+		tm.tv_usec = timeout%1000*1000;
 
 		FD_ZERO(&fdwrite);
 		FD_SET(hSocket, &fdwrite);
@@ -504,8 +504,8 @@ namespace ns_com_io_ctl{
 	}
 
 	void com_io_ctl::Message(const string&info)
-	{
-		MessageBox(NULL, (LPCWSTR)info.c_str(), TEXT("Error!"), MB_OK);
+	{				
+		MessageBox(NULL, (LPCWSTR)StringToWString(info).c_str(), L"WARNING!", MB_OK);
 	}
 
 	string com_io_ctl::logGetLastError()
@@ -545,6 +545,14 @@ namespace ns_com_io_ctl{
 		ofstream ofs(file,ios_base::app);
 		ofs.write(text.c_str(), text.size());
 		ofs.close();
+	}
+
+	//Converting a Ansi string to WChar string  
+	wstring com_io_ctl::StringToWString(const string &str)
+	{
+		wstring wstr(str.length(), L' ');
+		copy(str.begin(), str.end(), wstr.begin());
+		return wstr;
 	}
 }
 

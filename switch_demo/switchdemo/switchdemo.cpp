@@ -94,15 +94,19 @@ CONNECT:
 
 	vector<string> moduleList = cic->GetModuleList();
 
-	//hosts["700"].enable = false;	hosts[moduleList[0]].enable = false;
+	//hosts["700"].enable = false;	//hosts[moduleList[0]].enable = false;
 	//hosts["800"].enable = false;	//hosts[moduleList[1]].enable = false;
 	//hosts["900"].enable = false;	//hosts[moduleList[2]].enable = false;
 	//hosts["1800"].enable = false;	//hosts[moduleList[3]].enable = false;
 	//hosts["1900"].enable = false;	//hosts[moduleList[4]].enable = false;
 	//hosts["2100"].enable = false;	//hosts[moduleList[5]].enable = false;
-	//hosts["2600"].enable = false;	//hosts[moduleList[6]].enable = false;
-	//hosts["Signalswich"].enable = false;
-	//hosts["Paspecumpwmt"].enable = false;
+	//hosts["2600"].enable = false;	//hosts[moduleList[6]].enable = false;	
+
+	//设置使能	
+	cic->SetHostsCtrl(hosts,true,true);
+	
+	//更新hosts
+	cic->GetHostsCtrl(hosts);
 
 	for(map<string,com_io_ctl::stHostControl>::iterator itr = hosts.begin();
 		itr != hosts.end();
@@ -110,9 +114,6 @@ CONNECT:
 	{
 		cout<<itr->second.name<<"@"<<itr->second.ip<<"<"<<itr->second.enable<<">"<<endl;
 	}
-
-	//设置使能
-	cic->SetHostsCtrl(hosts);
 
 	//cic->Connect();
 	//cic->DisConnect();

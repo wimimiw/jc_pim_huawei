@@ -14,7 +14,12 @@
 			 3、开关正常操作过程中不加任何延时
 
 	存在问题：正常连接中，硬件因异常断线，而网络虚电路存在，偶尔无法复位模块。解决办法
-			 依次调用DisConnect、Connet函数。			
+			 依次调用DisConnect、Connet函数。		
+2015.3.20
+	修改内容：
+			1、连接时异步连接第一台按设置超时等待，然后每台分别超时等待500ms,最长8秒
+			（所有不在线）
+			2、增加两个主开关的控制使能
 *------------------------------------------------------------------------------*/
 #include "StdAfx.h"
 #include "implementsetting.h"
@@ -36,7 +41,7 @@ namespace ns_com_io_ctl
 		//派生类析构开始，此时基类虚函数表指向基类虚函数表，
 		//这跟构造函数时未建立虚函数表有类似情况。
 		//DisConnect();
-	}
+	}	
 	//获取主机控制信息
 	void implementsetting::GetHostsCtrl(map<string,stHostControl>&host)
 	{
@@ -52,9 +57,12 @@ namespace ns_com_io_ctl
 		host = __hostCtrl;
 	}
 	//设置主机控制信息
-	void implementsetting::SetHostsCtrl(const map<string,stHostControl>&host)
+	//设置两个主开关箱的使能配置(信号源开关，检测开关箱)
+	void implementsetting::SetHostsCtrl(const map<string, stHostControl>&host, bool bSignal, bool bDetect)
 	{		
 		__hostCtrl = host;
+		__hostCtrl["Signalswich"].enable = bSignal;
+		__hostCtrl["Paspecumpwmt"].enable = bDetect;
 	}
 	//获取TX1名称列表
 	vector<string>&implementsetting::GetTx1NameList(void)
@@ -172,7 +180,7 @@ namespace ns_com_io_ctl
 		}
 
 		bool result = true,
-			hasHost = false,
+			//hasHost = false,
 			cyc2 = false;
 		regex pattern("\\d{1,4}");
 		smatch mat;
@@ -196,13 +204,14 @@ namespace ns_com_io_ctl
 
 			if (!__hostCtrl[strTemp].enable)continue;
 
-			hasHost = true;
+			//hasHost = true;
 
 			IOConnectBegin(hostIter->second);
 		}			
 
 		bool delayFirst = true;
 		bool funcResult = true;
+		string infoPrintf("");
 
 		for (map<string, stHostControl>::iterator itr = __hostCtrl.begin();
 			itr != __hostCtrl.end();
@@ -210,7 +219,7 @@ namespace ns_com_io_ctl
 		{
 			if (!itr->second.enable)continue;
 
-			result = IOConnectEnd(itr->second.ip, delayFirst?3000:100);
+			result = IOConnectEnd(itr->second.ip, delayFirst?3000:500);
 			
 			if (result)
 				LoadModuleState(itr->second.ip);
@@ -219,6 +228,8 @@ namespace ns_com_io_ctl
 
 			if (!funcResult)
 			{
+				infoPrintf.append("<Switch IP - "+itr->second.ip+">:Failed!\n");
+
 				if (ACTION_MESSAGE_REPORT == 1)
 				{
 					string info("SWITCH::Connet::IP(");
@@ -233,7 +244,12 @@ namespace ns_com_io_ctl
 			delayFirst = false;
 		}
 
-		return funcResult && hasHost;
+		if (!funcResult)
+		{
+			Message(infoPrintf);
+		}
+
+		return funcResult;// && hasHost;
 	}
 	//断开
 	void implementsetting::DisConnect(void)
