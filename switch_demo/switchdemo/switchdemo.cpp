@@ -100,7 +100,7 @@ CONNECT:
 	//hosts["1800"].enable = false;	//hosts[moduleList[3]].enable = false;
 	//hosts["1900"].enable = false;	//hosts[moduleList[4]].enable = false;
 	//hosts["2100"].enable = false;	//hosts[moduleList[5]].enable = false;
-	hosts["2600"].enable = false;	//hosts[moduleList[6]].enable = false;	
+	//hosts["2600"].enable = false;	//hosts[moduleList[6]].enable = false;	
 
 	//ÉèÖÃÊ¹ÄÜ	
 	cic->SetHostsCtrl(hosts,true,true);

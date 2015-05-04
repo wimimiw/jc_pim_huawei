@@ -9,27 +9,13 @@
 * @date		:2015.3.1
 * @brief	:
 *------------------------------------------------------------------------------*/
-
 #pragma once
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string>
-#include <bitset>
-#include <iostream>
-#include <fstream>
-#include <vector>
-#include <list>
-#include <map>
-#include <regex>
-#include "switch_info.h"
-//#include <Windows.h>
 
 namespace ns_com_io_ctl
 {
 	using  namespace std;
 //#define __DEBUG_PRINT
-#define	ACTION_MESSAGE_REPORT    (0)   //1:enable    0:disable
+#define	ACTION_MESSAGE_REPORT    (1)   //1:enable    0:disable
 
 	class implementsetting
 	{

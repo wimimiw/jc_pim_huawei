@@ -12,9 +12,10 @@
 	增加网络连接异步操作函数：IOConnetBegin,IOConnectEnd
 2015.4.14
 	增加UDP连接选项
+2015.5.4
+	在IOWrite中加入第一次连接
 *------------------------------------------------------------------------------*/
-#include "StdAfx.h"
-#include "com_io_ctl.h"
+#include "stdafx.h"
 
 namespace ns_com_io_ctl{
 	com_io_ctl::com_io_ctl(void)
@@ -106,6 +107,8 @@ namespace ns_com_io_ctl{
 		__socketClient[host] = hSocket;
 		__socketState[host] = result;
 
+		if (!result)Message("MatrixSwitch::"+host+"::Connect::Failed!");
+
 		return result;
 	}
 	//网络断开虚函数
@@ -148,9 +151,6 @@ namespace ns_com_io_ctl{
 	//网络发送虚函数
 	bool com_io_ctl::IOWrite(const string&host, const char*buf, int len)
 	{
-		if (__maskIO)return true;
-
-		bool result = false;
 		//timeval tm;
 		//fd_set fdwrite;
 
@@ -167,8 +167,19 @@ namespace ns_com_io_ctl{
 		//}	
 		//FD_CLR(hSocket, &fdwrite);
 
+		if (__maskIO)return true;
+
+		bool result = false;
+
 		if (__conType == E_TCP)
 		{
+			if (__socketState[host] == false)
+				result = IOConnect(host);
+			else
+				result = true;
+
+			if (!result)return false;
+
 			SOCKET hSocket = __socketClient[host];
 			result = send(hSocket, buf, len, 0) != SOCKET_ERROR;
 		}
@@ -183,18 +194,17 @@ namespace ns_com_io_ctl{
 			//doing
 		}
 
-		log(host + " IOWrite:send  " + (result ? "Success!" : ("Failed! : " + logGetLastError())));
-
 		__socketState[host] = result;
+
+		log(host + " IOWrite:send  " + (result ? "Success!" : ("Failed! : " + logGetLastError())));		
+
+		if (!result)Message("MatrixSwitch::" + host + "::Write::Failed!");
 
 		return result;
 	}
 	//网络接收虚函数
 	bool com_io_ctl::IORead(const string&host, char*buf, int*len)
 	{
-		if (__maskIO)return true;
-
-		bool result = false;
 		//timeval tm;
 		//fd_set fdread;
 
@@ -211,8 +221,19 @@ namespace ns_com_io_ctl{
 		//}	
 		//FD_CLR(hSocket, &fdread);
 
+		if (__maskIO)return true;
+
+		bool result = false;
+
 		if (__conType == E_TCP)
 		{
+			if (__socketState[host] == false)
+				result = IOConnect(host);
+			else
+				result = true;
+
+			if (!result)return false;
+
 			SOCKET hSocket = __socketClient[host];
 			result = recv(hSocket, buf, *len, 0) != SOCKET_ERROR;
 		}
@@ -229,6 +250,8 @@ namespace ns_com_io_ctl{
 		}
 
 		log(host + " IORead:recv  " + (result ? "Success!" : ("Failed! : " + logGetLastError())));
+
+		if (!result)Message("MatrixSwitch::" + host + "::Read::Failed!");
 
 		__socketState[host] = result;
 
@@ -665,8 +688,9 @@ namespace ns_com_io_ctl{
 	}
 
 	void com_io_ctl::Message(const string&info)
-	{				
-		MessageBox(NULL, (LPCWSTR)StringToWString(info).c_str(), L"WARNING!", MB_OK);
+	{			
+		if (ACTION_MESSAGE_REPORT == 1)
+			MessageBox(GetForegroundWindow(), (LPCWSTR)StringToWString(info).c_str(), L"WARNING!", MB_OK);
 	}
 
 	string com_io_ctl::logGetLastError()

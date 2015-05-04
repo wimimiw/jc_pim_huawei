@@ -9,20 +9,12 @@
 * @date		:2015.3.1
 * @brief	:
 *------------------------------------------------------------------------------*/
-
 #pragma once
-
-#include "implementsetting.h"
-#include <Winsock2.h>
-#include <mswsock.h>
-
-#pragma comment(lib, "ws2_32.lib")
-#pragma comment(lib, "mswsock.lib")
 
 namespace ns_com_io_ctl{
 	using  namespace std;
 
-	#define  CONNECT_TYEP			E_UDP
+	#define  CONNECT_TYEP			E_TCP
 	#define	 DLL_HOST_NAME			"JcPimMultiBandV2.dll"		//宿主动态链接库名
 	#define  TCP_CONNECT_TIMEOUT	(3)
 	#define  TCP_SEND_TIMEOUT		(3)

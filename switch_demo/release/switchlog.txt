@@ -113,3 +113,28 @@
 (2015-04-14 15:32:06)==>192.168.1.85:4001 IOWrite:send  Success!
 (2015-04-14 15:32:06)==>192.168.1.85:4001 IORead:recv  Success!
 (2015-04-14 15:32:06)==>192.168.1.80:4001 IOWrite:send  Success!
+(2015-05-04 16:09:56)==>192.168.1.80:4001 DisConnect  Success!
+(2015-05-04 16:09:56)==>192.168.1.81:4001 DisConnect  Failed! : 10038
+(2015-05-04 16:09:56)==>192.168.1.82:4001 DisConnect  Failed! : 10038
+(2015-05-04 16:09:59)==>192.168.1.80:3003 DisConnect  Success!
+(2015-05-04 16:09:59)==>192.168.1.80:4001 IOConnectBegin:setsockopt SO_RCVTIMEO  Success!
+(2015-05-04 16:09:59)==>192.168.1.80:4001 IOConnectBegin:setsockopt SO_SNDTIMEO  Success!
+(2015-05-04 16:09:59)==>192.168.1.80:4001 IOConnectBegin:ioctlsocket  Success!
+(2015-05-04 16:09:59)==>192.168.1.80:4001 IOConnectBegin:connect Failed! 
+(2015-05-04 16:09:59)==>192.168.1.81:4001 IOConnectBegin:setsockopt SO_RCVTIMEO  Success!
+(2015-05-04 16:09:59)==>192.168.1.81:4001 IOConnectBegin:setsockopt SO_SNDTIMEO  Success!
+(2015-05-04 16:09:59)==>192.168.1.81:4001 IOConnectBegin:ioctlsocket  Success!
+(2015-05-04 16:09:59)==>192.168.1.81:4001 IOConnectBegin:connect Failed! 
+(2015-05-04 16:09:59)==>192.168.1.82:4001 IOConnectBegin:setsockopt SO_RCVTIMEO  Success!
+(2015-05-04 16:09:59)==>192.168.1.82:4001 IOConnectBegin:setsockopt SO_SNDTIMEO  Success!
+(2015-05-04 16:09:59)==>192.168.1.82:4001 IOConnectBegin:ioctlsocket  Success!
+(2015-05-04 16:09:59)==>192.168.1.82:4001 IOConnectBegin:connect Failed! 
+(2015-05-04 16:10:02)==>192.168.1.80:4001 IOConnectEnd:select  Failed! : 0
+(2015-05-04 16:10:02)==>192.168.1.80:4001 IOConnectEnd:FD_ISSET  Failed! : 183
+(2015-05-04 16:10:02)==>192.168.1.80:4001 IOConnectEnd:ioctlsocket and Connect  Failed! : 0
+(2015-05-04 16:10:05)==>192.168.1.81:4001 IOConnectEnd:select  Failed! : 0
+(2015-05-04 16:10:05)==>192.168.1.81:4001 IOConnectEnd:FD_ISSET  Failed! : 183
+(2015-05-04 16:10:05)==>192.168.1.81:4001 IOConnectEnd:ioctlsocket and Connect  Failed! : 0
+(2015-05-04 16:10:08)==>192.168.1.82:4001 IOConnectEnd:select  Failed! : 0
+(2015-05-04 16:10:08)==>192.168.1.82:4001 IOConnectEnd:FD_ISSET  Failed! : 183
+(2015-05-04 16:10:08)==>192.168.1.82:4001 IOConnectEnd:ioctlsocket and Connect  Failed! : 0

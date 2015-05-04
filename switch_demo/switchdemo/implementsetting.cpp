@@ -20,9 +20,10 @@
 			1、连接时异步连接第一台按设置超时等待，然后每台分别超时等待500ms,最长8秒
 			（所有不在线）
 			2、增加两个主开关的控制使能
+2015.5.4
+	将Connect中的功能禁用
 *------------------------------------------------------------------------------*/
-#include "StdAfx.h"
-#include "implementsetting.h"
+#include "stdafx.h"
 
 namespace ns_com_io_ctl
 {
@@ -173,83 +174,77 @@ namespace ns_com_io_ctl
 	bool implementsetting::Connect(void)
 	{
 		if (!bLoadMap)
-		{
-			if (ACTION_MESSAGE_REPORT == 1)
-				Message("SWITCH::Connet failed::load map failed!");			
+		{			
+			Message("SWITCH::load map failed!");			
 			return false;
 		}
 
-		bool result = true,
-			//hasHost = false,
-			cyc2 = false;
-		regex pattern("\\d{1,4}");
-		smatch mat;
+		return true;
 
-		for(map<string,string>::iterator hostIter = __ipmap.begin();
-			hostIter != __ipmap.end();
-			hostIter++)
-		{
-			regex_search(hostIter->first, mat, pattern);
+		//bool result = true,cyc2 = false;
+		//regex pattern("\\d{1,4}");
+		//smatch mat;
 
-			string strTemp(mat[0].str());
+		//for(map<string,string>::iterator hostIter = __ipmap.begin();
+		//	hostIter != __ipmap.end();
+		//	hostIter++)
+		//{
+		//	regex_search(hostIter->first, mat, pattern);
 
-			if ( strTemp != "" )
-			{				
-				__hostCtrl[strTemp].state = __hostCtrl[strTemp].enable;
-			}
-			else
-			{
-				strTemp = hostIter->first;				
-			}
+		//	string strTemp(mat[0].str());
 
-			if (!__hostCtrl[strTemp].enable)continue;
+		//	if ( strTemp != "" )
+		//	{				
+		//		__hostCtrl[strTemp].state = __hostCtrl[strTemp].enable;
+		//	}
+		//	else
+		//	{
+		//		strTemp = hostIter->first;				
+		//	}
 
-			//hasHost = true;
+		//	if (!__hostCtrl[strTemp].enable)continue;			
 
-			IOConnectBegin(hostIter->second);
-		}			
+		//	IOConnectBegin(hostIter->second);
+		//}			
 
-		bool delayFirst = true;
-		bool funcResult = true;
-		string infoPrintf("");
+		//bool delayFirst = true;
+		//bool funcResult = true;
+		//string infoPrintf("");
 
-		for (map<string, stHostControl>::iterator itr = __hostCtrl.begin();
-			itr != __hostCtrl.end();
-			itr++)
-		{
-			if (!itr->second.enable)continue;
+		//for (map<string, stHostControl>::iterator itr = __hostCtrl.begin();
+		//	itr != __hostCtrl.end();
+		//	itr++)
+		//{
+		//	if (!itr->second.enable)continue;
 
-			result = IOConnectEnd(itr->second.ip, delayFirst?3000:500);
-			
-			if (result)
-				LoadModuleState(itr->second.ip);
-			else
-				funcResult = false;
+		//	result = IOConnectEnd(itr->second.ip, delayFirst?3000:500);
+		//	
+		//	if (result)
+		//		LoadModuleState(itr->second.ip);
+		//	else
+		//		funcResult = false;
 
-			if (!funcResult)
-			{
-				infoPrintf.append("<Switch IP - "+itr->second.ip+">:Failed!\n");
+		//	if (!funcResult)
+		//	{
+		//		infoPrintf.append("<Switch IP - "+itr->second.ip+">:Failed!\n");
 
-				if (ACTION_MESSAGE_REPORT == 1)
-				{
-					string info("SWITCH::Connet::IP(");
-					info.append(itr->second.ip);
-					info.append(")::Failed");
-					Message(info);
-				}
-			}
+		//		string info("SWITCH::Connet::IP(");
+		//		info.append(itr->second.ip);
+		//		info.append(")::Failed");
+		//		Message(info);				
+		//	}
 
-			itr->second.state = result;
+		//	itr->second.state = result;
 
-			delayFirst = false;
-		}
+		//	delayFirst = false;
+		//}
 
-		if (!funcResult)
-		{
-			Message(infoPrintf);
-		}
+		//if (!funcResult)
+		//{
+		//	Message(infoPrintf);
+		//}
 
-		return funcResult;// && hasHost;
+		//return funcResult;
 	}
 	//断开
 	void implementsetting::DisConnect(void)
@@ -327,6 +322,7 @@ namespace ns_com_io_ctl
 			itr != __ipmap.end();
 			itr++)
 		{
+			stHC.state = true;
 			stHC.enable = true;
 			stHC.name = itr->first;
 			stHC.ip = itr->second;
@@ -488,9 +484,8 @@ namespace ns_com_io_ctl
 	bool implementsetting::Excute(void)
 	{
 		if (!bLoadMap)
-		{
-			if (ACTION_MESSAGE_REPORT == 1)
-				Message("SWITCH::Excute failed::load map failed!");			
+		{			
+			Message("SWITCH::Excute failed::load map failed!");			
 			return false;
 		}
 
@@ -506,12 +501,19 @@ namespace ns_com_io_ctl
 		txBuf[0]='W';
 
 		//读入主机使能队列
-		for (map<string, stHostControl>::iterator itr = __hostCtrl.begin();
+/*		for (map<string, stHostControl>::iterator itr = __hostCtrl.begin();
 			itr != __hostCtrl.end();
 			itr++)
 		{
 			hostIPEnableList[itr->second.ip] = itr->second.enable;
-		}		
+		}*/		
+
+		for (map<string, string>::iterator itr = __ipmap.begin();
+			itr != __ipmap.end();
+			itr++)
+		{
+			hostIPEnableList[itr->second] = true;
+		}
 
 		for (map<string, unsigned short*>::iterator actionIter = __actionList.begin();
 			actionIter != __actionList.end();
@@ -560,7 +562,7 @@ namespace ns_com_io_ctl
 				bool wrResult = false;
 				int len = 12;
 
-				for (int i = 0; i < 2; i++)
+				for (int i = 0; i < 1; i++)
 				{
 					funcResult = wrResult = IOWrite(ip, (char*)txBuf, sizeof(txBuf));
 
@@ -585,8 +587,8 @@ namespace ns_com_io_ctl
 				if (!funcResult)break;
 			}
 
-			break;
-			//if (replyCnt > 1 || funcResult)break;
+			//break;
+			if (replyCnt > 1 || funcResult)break;
 
 			replyCnt++;
 
@@ -627,21 +629,18 @@ namespace ns_com_io_ctl
 
 			if (!funcResult)
 			{
-				if (ACTION_MESSAGE_REPORT == 1)
+				string info("MatrixSwitch::Excute::IP(");
+					
+				for (vector<string>::iterator itr = actionQueue.begin();
+					itr != actionQueue.end();
+					itr++)
 				{
-					string info("SWITCH::Excute::IP(");
-					
-					for (vector<string>::iterator itr = actionQueue.begin();
-						itr != actionQueue.end();
-						itr++)
-					{
-						info.append(itr->c_str());
-						info.append("/");
-					}
-					
-					info.append(")::Failed after reset");
-					Message(info);
+					info.append(itr->c_str());
+					info.append("/");
 				}
+					
+				info.append(")::Failed after reset");
+				Message(info);
 
 				break;
 			}
