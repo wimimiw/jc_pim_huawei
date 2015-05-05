@@ -21,13 +21,9 @@
 #include <list>
 #include <map>
 #include <regex>
-#include "switch_info.h"
 
-#include "implementsetting.h"
 #include <Winsock2.h>
 #include <mswsock.h>
 
 #pragma comment(lib, "ws2_32.lib")
 #pragma comment(lib, "mswsock.lib")
-
-#include "com_io_ctl.h"

@@ -14,6 +14,7 @@
 //V20150306001
 
 #include "stdafx.h"
+#include "implementsetting.h"
 #include "com_io_ctl.h"
 
 using namespace std;

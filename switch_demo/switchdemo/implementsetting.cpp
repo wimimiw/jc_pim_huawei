@@ -24,6 +24,8 @@
 	将Connect中的功能禁用
 *------------------------------------------------------------------------------*/
 #include "stdafx.h"
+#include "switch_info.h"
+#include "implementsetting.h"
 
 namespace ns_com_io_ctl
 {
@@ -613,6 +615,7 @@ namespace ns_com_io_ctl
 
 			bool wait = true;
 			funcResult = true;
+			vector<string> errHost;
 
 			for (vector<string>::iterator itr = actionQueue.begin();
 				itr != actionQueue.end();
@@ -620,7 +623,9 @@ namespace ns_com_io_ctl
 			{
 				if (!IOConnectEnd(*itr, wait ? 1000 : 100))
 				{
+					errHost.push_back(*itr);
 					funcResult = false;
+					break;
 				}
 				wait = false;
 				//if (!funcResult)break;
@@ -628,18 +633,25 @@ namespace ns_com_io_ctl
 			}
 
 			if (!funcResult)
-			{
-				string info("MatrixSwitch::Excute::IP(");
-					
-				for (vector<string>::iterator itr = actionQueue.begin();
-					itr != actionQueue.end();
+			{			
+				string info("<MatrixSwitch>:[");
+
+				for (vector<string>::iterator itr = errHost.begin();
+					itr != errHost.end();
 					itr++)
 				{
-					info.append(itr->c_str());
-					info.append("/");
-				}
-					
-				info.append(")::Failed after reset");
+					for (map<string,string>::iterator mtr = __ipmap.begin();
+						mtr != __ipmap.end();
+						mtr++)
+					{
+						if (mtr->second == *itr)info.append(mtr->first + '@');
+					}
+
+					info.append(*itr+'/');
+				}	
+
+				info.append("]:<Failed>");
+
 				Message(info);
 
 				break;

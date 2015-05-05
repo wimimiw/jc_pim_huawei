@@ -10,6 +10,7 @@
 * @brief	:
 *------------------------------------------------------------------------------*/
 #pragma once
+#include "implementsetting.h"
 
 namespace ns_com_io_ctl{
 	using  namespace std;
