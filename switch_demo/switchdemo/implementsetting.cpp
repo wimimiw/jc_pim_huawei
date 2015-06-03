@@ -410,6 +410,35 @@ namespace ns_com_io_ctl
 	{
 		__actionList.clear();
 	}
+	//单独开关操作
+	void implementsetting::AddSwitchActionList(int addr, int swId, int swIdx)
+	{
+		if (addr > __ipNameList.size() || addr < 0)
+		{
+			char buf[10];
+			sprintf_s(buf,"%d",addr);
+			Message("JcMatrixSwitch : Switch : ModuleNumber < "+string(buf));
+			return;
+		}
+
+		if (swId > __switchNameList.size() || swId < 0)
+		{
+			char buf[10];
+			sprintf_s(buf, "%d", swId);
+			Message("JcMatrixSwitch : Switch : SwitchNumber < " + string(buf));
+			return;
+		}
+
+		auto itrIP = __ipNameList.begin();
+
+		for (size_t i = 1; i < addr && itrIP != __ipNameList.end(); itrIP++, i++){}
+
+		auto itrSwName = __switchNameList.begin();
+
+		for (size_t i = 1; i < swId && itrSwName != __switchNameList.end(); itrSwName++, i++){}
+
+		AddActionList(__ipmap[*itrIP],*itrSwName,swIdx);
+	}
 	//添加动作列表
 	void implementsetting::AddActionList(const string&ip,const string&sw,int chan)
 	{
@@ -427,6 +456,14 @@ namespace ns_com_io_ctl
 			{				
 				port[i] |= atoi(gpioValueStr[i].c_str());
 			}
+		}
+
+		if (chan < 1 || chan > __ioInfoMap[sw].size())
+		{
+			char buf[10];
+			sprintf_s(buf,"%d",chan);
+			Message("JcMatrixSwitch : " + sw + " : has no Idx = " + string(buf));
+			return;
 		}
 
 		str = __ioInfoMap[sw][chan-1];

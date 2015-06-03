@@ -221,6 +221,11 @@ CONNECT:
 			cout<<endl;
 		}
 
+		cic->Clear();
+		cic->AddSwitchActionList(0, 0, 1);
+		cic->Excute();
+
+
 		//等待输入
 		cout << "~:进入压力测试   r:重新连接   rt:连接测试" << endl;
 		cout<<">";
@@ -233,6 +238,28 @@ CONNECT:
 			cic->DisConnect();
 			//delete cic;
 			goto CONNECT;
+		}
+		else if (strA == "t")
+		{
+			for (size_t a = 0; a < nltx1.size(); a++)
+			{
+				for (size_t b = 0; b < nltx2.size(); b++)
+				{
+					for (size_t c = 0; c < nlpim.size(); c++)
+					{
+						for (size_t d = 0; d < nldet.size(); d++)
+						{
+							cic->Clear();
+							cic->SelChanTx1(nltx1[a]);
+							cic->SelChanTx2(nltx2[b]);
+							cic->SelChanPim(nlpim[c]);
+							cic->SelChanDet(nldet[d]);
+
+							cout << a << "  " << b << "  " << c << "  " << d << "  " << cic->Excute() << endl;
+						}
+					}
+				}
+			}
 		}
 		else if (strA == "rt")
 		{

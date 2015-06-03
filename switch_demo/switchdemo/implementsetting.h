@@ -85,6 +85,7 @@ namespace ns_com_io_ctl
 	public:
 		virtual~implementsetting(void);
 	public:
+		void AddSwitchActionList(int addr, int swId, int swIdx);
 		void GetHostsCtrl(map<string,stHostControl>&host);
 		void SetHostsCtrl(const map<string, stHostControl>&host, bool bSignal, bool bDetect);
 		vector<string>&GetModuleList(void);
